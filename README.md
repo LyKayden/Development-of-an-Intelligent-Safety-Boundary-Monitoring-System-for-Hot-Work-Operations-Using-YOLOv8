@@ -138,13 +138,6 @@ https://nodejs.org/zh-cn/
  33-40ms/帧
 |
 |
- NVIDIA RTX 3060
-|
- 40-60 FPS
-|
- 17-25ms/帧
-|
-|
  CPU (i5-11320H)
 |
  10-15 FPS
