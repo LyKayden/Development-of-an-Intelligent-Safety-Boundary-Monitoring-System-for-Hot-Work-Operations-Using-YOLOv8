@@ -8,7 +8,7 @@
 -------------------------
 - &zwnj;**源代码**&zwnj;：采用 [MIT许可证](https://opensource.org/licenses/MIT) 开源，允许自由使用、修改和分发。
 - &zwnj;**模型权重**&zwnj;：`models/`目录下的`best.pt`训练模型权重源自 [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)，遵循 [AGPL-3.0许可证](https://www.gnu.org/licenses/agpl-3.0.html)。
-- &zwnj;**训练数据集**&zwnj;：本项目所用训练数据集为作者自主手工标注、分类划分的自定义数据集，版权归用户所有，未随项目代码一同发布。
+- &zwnj;**训练数据集**&zwnj;：本项目所用训练数据集为作者自主手工标注、分类划分的自定义数据集，版权归作者所有，未随项目代码一同发布。
 
 > 若需了解许可证的详细条款，可点击上述链接查看官方文档。
 
