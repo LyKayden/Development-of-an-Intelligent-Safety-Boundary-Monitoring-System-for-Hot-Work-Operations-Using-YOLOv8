@@ -407,7 +407,7 @@ class SafetyRuleEngine:
                 elif d['class'] == 4:
                     color = (0, 0, 255)
                 elif d['class'] == 5:
-                    color = (0, 0, 255)
+                    color = (42, 42, 165)
                 elif d['class'] == 6:
                     color = (0, 255, 255)
                 else:
