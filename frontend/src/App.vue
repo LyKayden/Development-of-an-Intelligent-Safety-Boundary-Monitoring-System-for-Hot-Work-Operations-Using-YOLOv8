@@ -158,7 +158,7 @@
         <li>系统自动检测气瓶并计算距离</li>
       </ol>
 
-      <h4>🛡️ 安全规则（GB 30871-2022）</h4>
+      <h4>🛡️ 动火作业安全规则（GB 30871-2022）</h4>
       <ul>
         <li><span class="rule-distance">氧气瓶与乙炔瓶间距 ≥ 5 米</span></li>
         <li><span class="rule-distance">气瓶与动火点间距 ≥ 10 米</span></li>
@@ -341,7 +341,7 @@ export default {
       }
     },
 
-    // ✅ 新增：执行设置动火点（使用临时坐标）
+    // 新增：执行设置动火点（使用临时坐标）
     executeSetFirePoint() {
       if (!this.tempFirePoint) {
         console.error('❌ 临时坐标丢失');

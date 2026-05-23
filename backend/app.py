@@ -348,8 +348,8 @@ if __name__ == '__main__':
     # 启动服务器
     print("=" * 60)
     print("Server: http://localhost:5000")
-    # 修改 8：生产模式，前端由 Flask 托管（移除 5173 端口显示）
-    print("✅ 生产模式：前端由 Flask 托管（无需 Node.js）")
+    # 修改 8：生产模式，前端由 Flask 托管
+    print("✅ 生产模式：前端由 Flask 托管（无需启动 Node.js）")
     print("=" * 60)
 
     # 启动 Flask 服务器
