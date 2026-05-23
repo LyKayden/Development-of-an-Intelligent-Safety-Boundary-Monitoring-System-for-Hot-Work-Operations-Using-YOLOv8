@@ -51,7 +51,7 @@
 - 安装时勾选 "Add to PATH"
 - 安装完成后重启电脑
 
-### 🖥️ 步骤 1.5：配置 GPU 加速环境（PyTorch）
+### 步骤 1.5：配置 GPU 加速环境（PyTorch）
 > 💡 本项目强依赖 PyTorch 的 CUDA 版本以实现 GPU 加速推理。请严格按照以下步骤配置：
 
 **1. 确认 GPU 与 PyTorch 版本匹配**
