@@ -56,7 +56,7 @@
 - 选择 LTS 版本（长期支持版）
 - 默认安装即可（npm 自动附带）
 
-### 🖥️ 步骤 1.5：配置 GPU 加速环境（PyTorch）
+### 步骤 1.5：配置 GPU 加速环境（PyTorch）
 > 💡 本项目强依赖 PyTorch 的 CUDA 版本以实现 GPU 加速推理。请严格按照以下步骤配置：
 
 **1. 确认 GPU 与 PyTorch 版本匹配**
@@ -68,13 +68,13 @@
 - 参考指南：https://mirrors.tuna.tsinghua.edu.cn/help/pypi/
 - 在终端执行以下命令（推荐永久配置）：
   ```bash
-    python -m pip install --upgrade pip
-    pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+  python -m pip install --upgrade pip
+  pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
   ```
 
 **3. 安装 PyTorch 与高速下载技巧**
 - 在终端运行第 1 步复制的 PyTorch 安装命令。
-- ⚡ **大文件加速技巧**：PyTorch 的 `.whl` 文件通常较大（>500MB）。如果终端 `pip` 下载速度极慢，请：
+- **大文件加速技巧**：PyTorch 的 `.whl` 文件通常较大（>500MB）。如果终端 `pip` 下载速度极慢，请：
   1. 观察终端输出的完整 `.whl` 下载链接（以 `https://download.pytorch.org/...` 开头）。
   2. 复制该链接，粘贴到 **迅雷 (Thunder)** 或 IDM 下载器中进行 P2P 加速下载。
   3. 下载完成后，在终端执行：`pip install <你的本地下载路径/文件名.whl>` 完成离线安装。
