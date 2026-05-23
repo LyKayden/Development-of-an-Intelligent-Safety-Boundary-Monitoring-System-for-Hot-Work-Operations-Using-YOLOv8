@@ -4,8 +4,13 @@
 
 基于 YOLOv8 目标检测 + 单目视觉测距 + GB 30871-2022 安全规范
 
-> **⚠️ 许可证声明 / License**
-> The source code is licensed under MIT. The trained model weights in the `models/` directory are derived from Ultralytics YOLOv8 and are subject to the AGPL-3.0 license.
+⚠️ 许可证声明 / License
+-------------------------
+- &zwnj;**源代码**&zwnj;：采用 [MIT许可证](https://opensource.org/licenses/MIT){target="_blank"} 开源，允许自由使用、修改和分发。
+- &zwnj;**模型权重**&zwnj;：`models/`目录下的`best.pt`训练模型权重源自[Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics){target="_blank"}，遵循[AGPL-3.0许可证](https://www.gnu.org/licenses/agpl-3.0.html){target="_blank"}。
+- &zwnj;**训练数据集**&zwnj;：本项目所用训练数据集为作者自主手工标注、分类划分的自定义数据集，版权归用户所有，未随项目代码一同发布。
+
+> 若需了解许可证的详细条款，可点击上述链接查看官方文档。
 
 ---
 
@@ -156,7 +161,7 @@ HotworkMonitor/
 
 ## 🏗️ 系统架构
 
-![双线程+双帧缓冲架构](./docs/系统结构.png){: width="800px" height="480px" }
+![双线程+双帧缓冲架构](./docs/系统结构.png)
 
 ### 🔐 前端操作验证（纯客户端实现）
 > 💡 **设计定位**：本项目面向局域网/本地隔离部署场景，采用**前端 UI 级密码门禁**替代传统后端 Session/JWT 认证，以简化架构并保证控制指令低延迟下发。
