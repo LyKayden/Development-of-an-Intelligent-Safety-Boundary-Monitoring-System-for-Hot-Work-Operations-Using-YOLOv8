@@ -149,6 +149,8 @@ class SafetyRuleEngine:
                 cls = int(box.cls[0])
                 conf = float(box.conf[0])
                 xyxy = box.xyxy[0].cpu().numpy()  # [x1, y1, x2, y2]
+                # ↑ Ultralytics YOLOv8 的 xyxy 已经是像素坐标（相对于原始图像）
+                # 不是归一化坐标！不需要对应乘以图像高度和宽度！
 
                 x1, y1, x2, y2 = xyxy
                 x1 = max(0, min(x1, orig_w))
@@ -164,7 +166,7 @@ class SafetyRuleEngine:
                     'box': [x1, y1, x2, y2],
                     'confidence': conf,
                     'center': [(x1 + x2) / 2, (y1 + y2) / 2],
-                    'height': y2 - y1
+                    'height': y2 - y1 # 这就是像素高度（单位：pixel）
                 })
 
         self.frame_count += 1
