@@ -180,8 +180,8 @@ class SafetyRuleEngine:
         三维坐标重建（单目测距）
 
         使用检测框中心坐标（更稳定、收敛性好）
-        - 气瓶：式 2-11
-        - 动火点：式 2-15 ~ 2-19（射线 - 平面相交）
+        - 气瓶：式 2-14
+        - 动火点：式 2-18 ~ 2-22（射线 - 平面相交）
 
         参数：
         - u, v: 像素坐标
@@ -190,7 +190,7 @@ class SafetyRuleEngine:
 
         返回：(X, Y, Z) 相机坐标系下的三维坐标（毫米）
         """
-        # 步骤 1：计算未归一化投影向量（式 2-15）
+        # 步骤 1：计算未归一化投影向量（式 2-18）
         # 减去主点，转换到以图像中心主点为原点
         vx = (u - self.cx) / self.f0
         vy = (v - self.cy) / self.f0
@@ -202,7 +202,7 @@ class SafetyRuleEngine:
         dy = vy / L
         dz = vz / L
 
-        # 情况 A：已知高度的物体（如气瓶）- 式 2-11
+        # 情况 A：已知高度的物体（如气瓶）- 式 2-14
         if H_real and h_pixel:
             # 通过相似三角形，转换到相机三维坐标系（原点在光心）
             Z = self.f0 * (H_real / h_pixel) # 深度（单位：毫米）
@@ -210,7 +210,7 @@ class SafetyRuleEngine:
             Y = (v - self.cy) * Z / self.f0 # 相机坐标系 Y（单位：毫米）
             return np.array([X, Y, Z]) # 原点为相机光心
 
-        # 情况 B：动火点（射线 - 平面相交）- 式 2-18、2-19
+        # 情况 B：动火点（射线 - 平面相交）- 式 2-21、2-22
         else:
             # 检查平面是否有效
             if self.y_plane_calc is None or abs(self.y_plane_calc) < 1e-6:
@@ -223,7 +223,7 @@ class SafetyRuleEngine:
             # 其中 Dfinal = -self.y_plane_calc（y_plane_calc 是平面 Y 坐标）
             t = self.y_plane_calc / dy
 
-            # 计算三维坐标（式 2-19）
+            # 计算三维坐标（式 2-22）
             X = t * dx
             Y = t * dy
             Z = t * dz
@@ -238,17 +238,17 @@ class SafetyRuleEngine:
         oxygen_boxes = [d for d in detections if d['class'] == 2]
         acetylene_boxes = [d for d in detections if d['class'] == 5]
 
-        # ========== 更新平面基准（式 2-13、2-14） ==========
+        # ========== 更新平面基准（式 2-16、2-17） ==========
         if oxygen_boxes:
             b = oxygen_boxes[0]
             u1, v1 = b['center'] # 使用检测框中心
             h1 = b['height']
 
-            # 计算气瓶三维坐标（式 2-11）
+            # 计算气瓶三维坐标（式 2-14）
             p1 = self.get_3d_point(u1, v1, h1, self.gas_heights[2])
 
             if p1 is not None:
-                # Dbase = -Yc1（式 2-13，作业水平面法向量n=(0,1,0)）
+                # Dbase = -Yc1（式 2-16，作业水平面法向量n=(0,1,0)）
                 # 法向量 n = (0, 1, 0)（水平面假设）
                 # 平面上一点 P1(Xc1, Yc1, Zc1)
 
@@ -260,14 +260,14 @@ class SafetyRuleEngine:
                 #
                 Dbase = -p1[1] # p1[1] 就是 Yc1
 
-                # Dfinal = Dbase + ΔD（式 2-14）
+                # Dfinal = Dbase + ΔD（式 2-17）
                 #        = -Yc1 + Δh
                 # platform_height 是高度差（毫米），直接相加
                 self.y_plane_calc = Dbase + self.platform_height
 
                 print(f"[PLANE] 平面基准更新：Y={self.y_plane_calc:.2f}mm")
 
-        # ========== 规则 1: 氧气瓶与乙炔瓶间距（式 2-20） ==========
+        # ========== 规则 1: 氧气瓶与乙炔瓶间距（式 2-23） ==========
         for o_box in oxygen_boxes:
             for a_box in acetylene_boxes:
                 dist = self._calc_distance(o_box, a_box)
@@ -280,7 +280,7 @@ class SafetyRuleEngine:
                         })
                         self.last_alarm_time['gas_to_gas'] = current_time
 
-        # ========== 规则 2: 气瓶与动火点间距（式 2-20） ==========
+        # ========== 规则 2: 气瓶与动火点间距（式 2-23） ==========
         if self.fire_point and self.y_plane_calc is not None:
             for b in oxygen_boxes + acetylene_boxes:
                 dist = self._calc_distance_to_fire(b)
