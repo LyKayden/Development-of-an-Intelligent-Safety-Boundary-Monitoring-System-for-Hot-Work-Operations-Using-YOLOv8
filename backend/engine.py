@@ -77,9 +77,15 @@ class SafetyRuleEngine:
         self.fire_point = None
 
         # 6. 平台高度差（毫米）
+        # 重要：Δh 是作业平台相对于气瓶中心点的高度差，需根据现场实际情况人工测量后输入
+        # 不是固定的基础设施高度，因为气瓶位置可能变化
+        # 约定：Δh > 0 表示作业平台高于气瓶中心点，Δh < 0 表示低于
+        # 示例：若平台绝对高度 5 米，气瓶中心点绝对高度 0.75 米，则 Δh ≈ 4250mm
         self.platform_height = 0.0
 
         # 7. 平面基准
+        # y_plane_base: 气瓶中心点 Y 坐标 (Yc1)
+        # y_plane_calc: 作业平面 Y 坐标 (Y_plane = Yc1 - Δh)，正值，表示相机下方的距离
         self.y_plane_base = 0.0
         self.y_plane_calc = 0.0
 
@@ -191,6 +197,7 @@ class SafetyRuleEngine:
         - H_real: 物体实际高度（毫米）
 
         返回：(X, Y, Z) 相机坐标系下的三维坐标（毫米）
+        注意：相机坐标系 Y 轴竖直向下，因此 Y > 0 表示点在相机下方
         """
         # 步骤 1：计算未归一化投影向量（式 2-18）
         # 减去主点，转换到以图像中心主点为原点
@@ -212,17 +219,17 @@ class SafetyRuleEngine:
             Y = (v - self.cy) * Z / self.f0 # 相机坐标系 Y（单位：毫米）
             return np.array([X, Y, Z]) # 原点为相机光心
 
-        # 情况 B：动火点（射线 - 平面相交）- 式 2-21、2-22
+        # 情况 B：动火点（射线 - 平面相交）- 式 2-21'、2-22
         else:
             # 检查平面是否有效
             if self.y_plane_calc is None or abs(self.y_plane_calc) < 1e-6:
                 return None
 
             # 射线与平面相交（式 2-18）
-            # 平面方程：Y + Dfinal = 0（相机水平安装：相机摄像头面垂直于水平地面，法向量n=(0,1,0)）
-            # 射线方程：P(t) = t * d（d 为单位方向向量）
-            # 联立得：t * dy + Dfinal = 0 → t = -Dfinal / dy
-            # 其中 Dfinal = -self.y_plane_calc（y_plane_calc 是平面 Y 坐标）
+            # 平面方程（物理意义）：Y = Y_plane (Y_plane 为正值，表示相机下方的垂直距离)
+            # 射线方程：P(t) = t * d（d 为单位方向向量，dy > 0 表示射线向下）
+            # 联立得：t * dy = Y_plane → t = Y_plane / dy
+            # 注意：self.y_plane_calc 存储的是 Y_plane（正值），不是平面方程参数 D（负值）
             t = self.y_plane_calc / dy
 
             # 计算三维坐标（式 2-22）
@@ -241,6 +248,9 @@ class SafetyRuleEngine:
         acetylene_boxes = [d for d in detections if d['class'] == 5]
 
         # ========== 更新平面基准（式 2-16、2-17） ==========
+        # 逻辑：Y_plane = Yc1 - Δh
+        # Yc1: 气瓶中心点 Y 坐标 (正值)
+        # Δh: 作业平台高度差 (platform_height), Δh>0 表示作业平台高于气瓶
         if oxygen_boxes:
             b = oxygen_boxes[0]
             u1, v1 = b['center'] # 使用检测框中心
@@ -250,24 +260,17 @@ class SafetyRuleEngine:
             p1 = self.get_3d_point(u1, v1, h1, self.gas_heights[2])
 
             if p1 is not None:
-                # Dbase = -Yc1（式 2-16，作业水平面法向量n=(0,1,0)）
-                # 法向量 n = (0, 1, 0)（水平面假设）
-                # 平面上一点 P1(Xc1, Yc1, Zc1)
+                # Yc1 = p1[1] (正值，因为 Y 轴向下)
+                Yc1 = p1[1]
 
-                #
-                # 计算 Dbase
-                # Dbase = -(nx*Xc1 + ny*Yc1 + nz*Zc1)
-                #    = -(0*Xc1 + 1*Yc1 + 0*Zc1)
-                #    = -Yc1
-                #
-                Dbase = -p1[1] # p1[1] 就是 Yc1
+                # 计算作业平面 Y 坐标
+                # 如果平台高于气瓶 (Δh>0)，则平面 Y 坐标变小
+                # 如果平台低于气瓶 (Δh<0)，则平面 Y 坐标变大
+                self.y_plane_calc = Yc1 - self.platform_height
 
-                # Dfinal = Dbase + ΔD（式 2-17）
-                #        = -Yc1 + Δh
-                # platform_height 是高度差（毫米），直接相加
-                self.y_plane_calc = Dbase + self.platform_height
+                # 调试信息：打印平面基准
+                print(f"[PLANE] 平面基准更新：Y={self.y_plane_calc:.2f}mm (Δh={self.platform_height}mm)")
 
-                print(f"[PLANE] 平面基准更新：Y={self.y_plane_calc:.2f}mm")
 
         # ========== 规则 1: 氧气瓶与乙炔瓶间距（式 2-23） ==========
         for o_box in oxygen_boxes:

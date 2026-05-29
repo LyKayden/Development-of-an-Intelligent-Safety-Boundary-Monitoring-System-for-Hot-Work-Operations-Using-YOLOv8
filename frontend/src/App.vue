@@ -34,8 +34,14 @@
     <div class="control-panel">
       <div class="input-row">
         <div class="input-group">
-          <label>平台高度差 (米)：</label>
-          <input type="number" v-model="platformHeight" step="0.1" placeholder="0" />
+          <label>平台相对高度差 (米)：</label>
+          <input
+            type="number"
+            v-model="platformHeight"
+            step="0.1"
+            placeholder="0"
+            title="作业平台相对于气瓶中心点的高度差（平台高于气瓶填正值，低于填负值）"
+          />
         </div>
 
         <div class="button-group">
@@ -152,7 +158,7 @@
       <ol>
         <li>双击 start.bat 启动系统</li>
         <li>等待视频流加载完成</li>
-        <li>输入平台高度差（地面作业填 0）</li>
+        <li>输入平台相对高度差（米）：测量作业平台相对于气瓶中心点的高度差，平台高于气瓶填正值，低于填负值</li>
         <li>点击视频画面中动火点位置进行锚定</li>
         <li>点击"开始监控"按钮</li>
         <li>系统自动检测气瓶并计算距离</li>
@@ -178,9 +184,14 @@ import axios from 'axios';
 export default {
   name: 'App',
   data() {
+    // 新增：获取当前主机地址
+    const host = window.location.hostname;
+    const baseURL = `${window.location.protocol}//${host}:5000`;
+
     return {
       // 修改：自动获取当前主机地址
-      videoUrl: `${window.location.protocol}//${window.location.hostname}:5000/video`,
+      baseURL: baseURL,  // 新增：基础 URL
+      videoUrl: `${baseURL}/video`,  // 修改：使用 baseURL
       isRunning: false,
       firePoint: null,
       platformHeight: 0,
@@ -231,8 +242,7 @@ export default {
       this.isConnecting = true;
 
       // 新增：自动获取当前主机地址
-      const host = window.location.hostname;
-      this.socket = io(`http://${host}:5000`, {
+      this.socket = io(this.baseURL, {
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionAttempts: 10
@@ -354,7 +364,7 @@ export default {
       console.log("🖱️ [FRONTEND] 用户点击视频画面");
       console.log(`   点击坐标：(${this.firePoint.x.toFixed(2)}, ${this.firePoint.y.toFixed(2)})`);
 
-      axios.post('http://localhost:5000/set_fire_point', {
+      axios.post(`${this.baseURL}/set_fire_point`, {
         x: this.firePoint.x,
         y: this.firePoint.y
       }, { timeout: 5000 })
@@ -413,7 +423,7 @@ export default {
     },
 
     doStartTask() {
-      axios.post('http://localhost:5000/start', {
+      axios.post(`${this.baseURL}/start`, {
         fire_point_x: this.firePoint.x,
         fire_point_y: this.firePoint.y,
         platform_height: this.platformHeight * 1000
@@ -431,7 +441,7 @@ export default {
     },
 
     doStopTask() {
-      axios.post('http://localhost:5000/stop', { timeout: 5000 })
+      axios.post(`${this.baseURL}/stop`, { timeout: 5000 })
         .then(response => {
           if (response.data.status === 'stopped') {
             this.isRunning = false;
@@ -446,7 +456,7 @@ export default {
 
     doClearFirePoint() {
       this.firePoint = null;
-      axios.post('http://localhost:5000/clear_fire_point')
+      axios.post(`${this.baseURL}/clear_fire_point`)
         .then(response => {
           if (response.data.status === 'success') {
             console.log('✅ 动火点已清除');
@@ -458,7 +468,7 @@ export default {
     },
 
     doResetStats() {
-      axios.post('http://localhost:5000/reset_stats')
+      axios.post(`${this.baseURL}/reset_stats`)
         .then(() => {
           this.stats = {
             gas_to_gas: 0,
@@ -541,7 +551,7 @@ export default {
 
     async fetchStats() {
       try {
-        const response = await axios.get('http://localhost:5000/stats');
+        const response = await axios.get(`${this.baseURL}/stats`);
         this.stats = response.data;
       } catch (error) {
         console.error('获取统计失败:', error);
