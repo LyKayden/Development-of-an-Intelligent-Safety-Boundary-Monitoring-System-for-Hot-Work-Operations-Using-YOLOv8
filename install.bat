@@ -14,20 +14,7 @@ echo.
 echo  📁 项目目录：%PROJECT_DIR%
 echo.
 
-:: ========== 检查 Node.js ==========
-:: 保留：打包时需要 Node.js
-where node >nul 2>nul
-if %errorlevel% neq 0 (
-    echo ❌ 错误：未检测到 Node.js
-    echo 请先安装 Node.js: https://nodejs.org/zh-cn/
-    echo 安装后重启此脚本
-    pause
-    exit /b 1
-)
-echo ✓ Node.js 已安装
-echo.
-
-:: ========== 检查 conda ==========
+:: ========== 检查 conda (后端运行必需) ==========
 if exist "C:\ProgramData\miniconda3\Scripts\conda.exe" (
     set CONDA_PATH=C:\ProgramData\miniconda3\Scripts\conda.exe
     goto conda_found
@@ -58,7 +45,7 @@ for /f "delims=" %%i in ('%CONDA_PATH% info --base') do set CONDA_ROOT=%%i
 echo ✓ conda 根目录：%CONDA_ROOT%
 echo.
 
-:: ========== 检查项目文件 ==========
+:: ========== 检查后端项目文件 ==========
 if not exist "%PROJECT_DIR%\backend\requirements.txt" (
     echo ❌ 错误：找不到 backend\requirements.txt
     echo 请确认项目文件完整
@@ -66,19 +53,11 @@ if not exist "%PROJECT_DIR%\backend\requirements.txt" (
     exit /b 1
 )
 echo ✓ backend\requirements.txt 存在
-
-if not exist "%PROJECT_DIR%\frontend\package.json" (
-    echo ❌ 错误：找不到 frontend\package.json
-    echo 请确认项目文件完整
-    pause
-    exit /b 1
-)
-echo ✓ frontend\package.json 存在
 echo.
 
-:: ========== [1/4] 检查/创建 conda 环境 ==========
+:: ========== [1/3] 检查/创建 conda 环境 ==========
 echo ============================================================
-echo [1/4] 检查 conda 环境 (yolov8)...
+echo [1/3] 检查 conda 环境 (yolov8)...
 echo ============================================================
 
 :: 检查 yolov8 环境文件夹是否存在
@@ -99,9 +78,9 @@ if exist "%CONDA_ROOT%\envs\yolov8\python.exe" (
 :env_exists
 echo.
 
-:: ========== [2/4] 检查/安装 Python 依赖 ==========
+:: ========== [2/3] 检查/安装 Python 依赖 ==========
 echo ============================================================
-echo [2/4] 检查 Python 依赖...
+echo [2/3] 检查 Python 依赖...
 echo ============================================================
 
 :: 使用 yolov8 环境的 python.exe 检查 flask 是否已安装
@@ -125,35 +104,30 @@ if %errorlevel% equ 0 (
 :python_deps_done
 echo.
 
-:: ========== [3/4] 检查/安装前端依赖 ==========
+:: ========== [3/3] 检查前端预打包文件 (核心修改) ==========
 echo ============================================================
-echo [3/4] 检查前端依赖...
+echo [3/3] 检查前端预打包文件 (dist)...
 echo ============================================================
 
-:: 检查 node_modules 文件夹是否存在
-if exist "%PROJECT_DIR%\frontend\node_modules" (
-    echo ✓ 前端依赖已安装 (node_modules 存在)，跳过安装
-    goto npm_done
+if exist "%PROJECT_DIR%\frontend\dist\index.html" (
+    echo ✓ 发现预打包的前端文件 (dist/index.html)
+    echo 💡 提示：普通用户无需安装 Node.js 即可运行！
+    echo    (仅当您需要修改 Vue 源码时，才需安装 Node.js 并运行 npm install)
+    goto frontend_done
 ) else (
-    echo ⚠️  前端依赖未安装，正在安装...
-    cd /d %PROJECT_DIR%\frontend
-    call npm install
-    if %errorlevel% neq 0 (
-        echo ❌ 前端依赖安装失败
-        pause
-        exit /b 1
-    )
-    echo ✓ 前端依赖安装成功
+    echo ⚠️  警告：未找到 frontend\dist\index.html
+    echo    如果您只是运行系统，请确保下载了完整的预打包版本。
+    echo    如果您是开发者，请安装 Node.js 并运行 npm run build。
+    echo.
 )
 
-:npm_done
+:frontend_done
 echo.
 
-:: ========== [4/4] 检查模型文件 ==========
+:: ========== 检查模型文件 ==========
 echo ============================================================
-echo [4/4] 检查模型文件...
+echo 🔍 检查模型文件...
 echo ============================================================
-:: 修改：模型文件改为 best.pt
 if exist "%PROJECT_DIR%\models\best.pt" (
     echo ✓ 模型文件已存在 (best.pt)
 ) else (
@@ -169,7 +143,6 @@ echo          ✅ 安装完成！
 echo ============================================================
 echo.
 echo  📌 下一步：
-:: 修改：端口改为 5000
 echo  1. 双击 start.bat 启动系统
 echo  2. 浏览器自动打开 http://localhost:5000/
 echo.

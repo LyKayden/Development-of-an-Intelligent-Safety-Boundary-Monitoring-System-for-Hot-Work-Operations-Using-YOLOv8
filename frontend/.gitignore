@@ -8,8 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
+# 把这两行删掉或注释掉，让 Git 能够追踪 npm 生成的静态 dist 文件夹
+# dist
+# dist-ssr
 *.local
 
 # Editor directories and files
