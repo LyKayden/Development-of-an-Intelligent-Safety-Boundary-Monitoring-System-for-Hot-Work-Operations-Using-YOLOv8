@@ -1,3 +1,11 @@
+# （1）告诉 Git：.bat（批处理脚本）和 .ps1（PowerShell 脚本）不仅是文本文件，
+# 而且无论你在什么系统上拉取代码，在本地工作区里，它们的换行符必须强制使用 Windows 的 CRLF。
+
+# （2）为什么这么做：因为 Windows 的脚本（.bat 和 .ps1）需要遵守 CRLF 的换行符规范，
+# 而 Linux 和 Mac 默认使用 LF 作为换行符
+# 如果换行符变成了 Mac/Linux 的 LF，这些脚本在 Windows 上运行时可能会直接报错或无法执行。
+# 强制指定 eol=crlf 就能保证这些脚本在任何人的电脑上都能正常运行。
+
 * text=auto
 *.bat text eol=crlf
 *.ps1 text eol=crlf
